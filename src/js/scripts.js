@@ -7,6 +7,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader';
 import { modelDirection } from 'three/examples/jsm/nodes/Nodes.js';
 import { RGBELoader } from 'three/examples/jsm/Addons.js';
+import gsap from 'gsap';
 
 
 function init() {
@@ -18,13 +19,13 @@ function init() {
     renderer.setClearColor('rgb(0, 0, 0)');
     document.body.appendChild(renderer.domElement);
     // camera control
-    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
     const orbitControls = new OrbitControls(camera,renderer.domElement);
     const axesHelper = new THREE.AxesHelper( 5 );
     const gridHelper = new THREE.GridHelper( 10, 10 );
     scene.add(gridHelper);
     scene.add(axesHelper);
-    camera.position.set(1, 2, 5);
+    camera.position.set(6, 8, 14);
     camera.lookAt(new THREE.Vector3(0, 0, 0));
     orbitControls.update();
 
@@ -39,12 +40,12 @@ function init() {
     // const line = new THREE.LineSegments(new THREE.EdgesGeometry(geometry), lineMaterial);
     // const mesh = new THREE.Mesh(geometry, meshMaterial);
 
-    var BoxGeometry = new THREE.BoxGeometry(1, 1, 1);
+    var BoxGeometry = new THREE.BoxGeometry(5, 5, 5);
     // const BoxMaterial = new THREE.MeshStandardMaterial({color: 0x00ff00});
     var BoxMaterial = new THREE.MeshBasicMaterial({
         color: 0x00ff00,
         transparent: true,
-        opacity: 0.3,
+        opacity: 0.2,
         // map: new THREE.TextureLoader().load(mentality)
     })
     var Box = new THREE.Mesh(BoxGeometry, BoxMaterial);
@@ -79,7 +80,7 @@ function init() {
     SpotLight.castShadow = true;
     SpotLight.angle = Math.PI / 4;
     SpotLight.penumbra = 0.5;
-    SpotLight.intensity = 2;
+    SpotLight.intensity = 10;
 
     const spotLightHelper = new THREE.SpotLightHelper(SpotLight);
     scene.add(spotLightHelper);
@@ -102,33 +103,34 @@ function init() {
         mentality
     ]);
 
+    
 
-
-    //MATERIALS SELECTION
-   
 
     // GUI
     const gui = new dat.GUI();
     const options = {
         color: 0xff0000,
-        intensity: 10,
+        intensity: 50,
         penumbra: 0.5,
-        'Main' : 0x029320,
-        'Front wheel' : 0x939222,
-        'Back wheel' : 0x337777,
-        'Body' : 0xd03933,
+        light_y : 5,
+        'Body' : 0x029320
     }
     const params = {    
         material: 'Solid',
     };
     gui.add(params, 'material', ['Solid', 'Line', 'Point']).onChange(function(e){
         if (e === 'Solid') {
-            BoxMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: false });
+            scene.remove(Box)
+            BoxMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: false, 
+                transparent: true,
+                opacity: 0.2 });
             Box = new THREE.Mesh(BoxGeometry, BoxMaterial);
         } else if (e === 'Line') {
+            scene.remove(Box)
             BoxMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
             Box = new THREE.LineSegments(new THREE.EdgesGeometry(BoxGeometry), BoxMaterial);
         } else if (e === 'Point') {
+            scene.remove(Box)
             BoxMaterial = new THREE.PointsMaterial({ color: 0x00f0f0, size: 0.1 });
             Box = new THREE.Points(BoxGeometry, BoxMaterial);
         }
@@ -138,37 +140,58 @@ function init() {
     gui.addColor(options, 'color').onChange(function(e){
         BoxMaterial.color.set(options.color);
     });
-    gui.add(Box.position, 'z', -5, 5);
-    gui.add(options, 'intensity', 0, 50).onChange(function(e){
+    gui.add(options, 'intensity', 0, 100).onChange(function(e){
         SpotLight.intensity = options.intensity;
     });
     gui.add(options, 'penumbra', 0, 1).onChange(function(e){
         SpotLight.penumbra = options.penumbra;
     });
-    
-    // LIGHT HDR
-    const assetLoader = new GLTFLoader();
-    const rgbeLoader = new RGBELoader();
-    renderer.outputEncoding = THREE.sRGBEncoding;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 4;
-
-    rgbeLoader.load('./assets/MR_INT-001_NaturalStudio_NAD.hdr', function(texture){
-        texture.mapping = THREE.EquirectangularReflectionMapping;
-        scene.environment = texture;
-
-        assetLoader.load('./assets/scene.gltf', function(gltf){
-            const model = gltf.scene;
-            scene.add(model);
-            console.log(model);
-        }, function(xhr) {
-            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-        }, function(error) {
-            console.error(error)
-        });
+    gui.add(options, 'light_y', -10, 20).onChange(function(e){
+        SpotLight.position.y = options.light_y;
     });
-    
-    
+
+
+    // LIGHT HDR
+    // function rgbe_apply (texture, renderer, scene) {
+        // const assetLoader = new GLTFLoader();
+        // const rgbeLoader = new RGBELoader();
+        // renderer.outputEncoding = THREE.sRGBEncoding;
+        // renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        // renderer.toneMappingExposure = 4;
+        // rgbeLoader.load('./assets/MR_INT-001_NaturalStudio_NAD.hdr', function(texture){
+        //     texture.mapping = THREE.EquirectangularReflectionMapping;
+        //     scene.environment = texture;
+        //     // ********** Load model **********
+        //     assetLoader.load('./assets/scene.gltf', function(gltf){
+        //         const model = gltf.scene;
+        //         scene.add(model);
+        //         console.log(model);
+        //     }, function(xhr) {
+        //         console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        //     }, function(error) {
+        //         console.error(error)
+        //     });
+        // });    
+    // }
+    // rgbe_apply(renderer, scene, camera);
+
+    // // // Loader model without HDR
+    const gltfLoader = new GLTFLoader();
+    gltfLoader.load('./assets/scene.gltf', function(gltf){
+        const model = gltf.scene;
+        scene.add(model);
+        console.log(model);
+        model.scale.set(1, 1, 1);
+        model.position.set(0, 0, 0);
+        model.name = "car";
+        gui.addColor(options, 'Body').onChange(function(e){
+            model.getObjectByName("body_paint_0").material.color.setHex(e);
+        });
+    }, function(xhr) {
+        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+    }, function(error) {
+        console.error(error)
+    });
 
     update(renderer, scene, camera);
     return scene;
@@ -181,10 +204,85 @@ function update(renderer, scene, camera) {
         mousePosition.x = (event.clientX / window.innerWidth) * 2 - 1;
         mousePosition.y = -(event.clientY / window.innerHeight) * 2 + 1;
     });
-    const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(mousePosition, camera);
-    const intersects = raycaster.intersectObjects(scene.children, true);
-    renderer.render(scene, camera);
+    const tl = gsap.timeline();
+    // when press 123 camera = (6, 8, 14) => (16,23,32)
+    window.addEventListener('keydown', function(e) {
+            if (e.key ==='1') {
+            tl.to(camera.position , {
+                z: 14, 
+                duration: 1.5,
+                onUpdate: function() {
+                    camera.lookAt(0,0,0);
+                }
+            })
+
+            .to(camera.position , {
+                y: 10,
+                duration: 1.5,
+                onUpdate: function() {
+                    camera.lookAt(0,0,0);
+                }
+            })
+
+            .to(camera.position , {
+                x: 10,
+                y: 5,
+                z: 10,
+                duration: 1.5,
+                onUpdate: function() {
+                    camera.lookAt(0,0,0);
+                }
+            });
+        } else if (e.key === '2') { // (6, 8, 14) => (0,3,11)
+            tl.to(camera.position , {
+                z: -3, 
+                duration: 3,
+                onUpdate: function() {
+                    camera.lookAt(0,0,0);
+                }
+            })
+
+            .to(camera.position , {
+                y: -5,
+                duration: 2,
+                onUpdate: function() {
+                    camera.lookAt(0,0,0);
+                }
+            })
+
+            .to(camera.position , {
+                x: 3,
+                y: 5,
+                z: 3,
+                duration: 4,
+                onUpdate: function() {
+                    camera.lookAt(0,0,0);
+                }
+            });
+        }
+    });
+    // moving
+    const model = scene.getObjectByName("car");
+    window.addEventListener('keydown', function(e) {
+        if (e.key === 'w') {
+            model.position.z += 0.0001;
+        } else if (e.key === 's') {
+            model.position.z -= 0.0001;
+        } else if (e.key === 'a') {
+            model.position.x -= 0.0001;
+        } else if (e.key === 'd') {
+            model.position.x += 0.0001;
+        }
+    });
+    
+    // const raycaster = new THREE.Raycaster();
+    // raycaster.setFromCamera(mousePosition, camera);
+    // const intersects = raycaster.intersectObjects(scene.children, true);
+    function animate() {
+        renderer.render(scene, camera);
+    }
+    
+    renderer.setAnimationLoop(animate);
     
     
     requestAnimationFrame(function() {
