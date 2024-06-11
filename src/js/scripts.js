@@ -1,11 +1,11 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
-import mentality from '../assets/textures/mentality.jpg';
-import Olivia from '../assets/textures/Olivia_Rodrigo.gif';
+import stars from '../assets/textures/stars.jpg';
+import ice from '../assets/textures/ice.jpg';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader';
-import { modelDirection } from 'three/examples/jsm/nodes/Nodes.js';
+import { mod, modelDirection } from 'three/examples/jsm/nodes/Nodes.js';
 import { RGBELoader } from 'three/examples/jsm/Addons.js';
 import gsap from 'gsap';
 
@@ -40,6 +40,33 @@ function init() {
     // const line = new THREE.LineSegments(new THREE.EdgesGeometry(geometry), lineMaterial);
     // const mesh = new THREE.Mesh(geometry, meshMaterial);
 
+    // // // apply image on cylinder
+    // const CylinderTexture = new THREE.TextureLoader().load(ice);
+    // CylinderMaterial = new THREE.MeshStandardMaterial({
+    //     map: CylinderTexture,
+    //     roughness: 0.7,
+    //     metalness: 0.2
+    // });
+    // var Cylinder = new THREE.Mesh(new THREE.CylinderGeometry(3, 2, 0.5, 32), CylinderMaterial);
+    // scene.add(Cylinder);    
+    // Cylinder.position.set(0, -0.25, 0);
+    // Cylinder.castShadow = true;
+
+    // Sphere
+    const sphereRadius = 6;
+    const SphereGeometry = new THREE.SphereGeometry(sphereRadius, 32, 32);
+    const SphereMaterial = new THREE.MeshStandardMaterial({
+        map: new THREE.TextureLoader().load(ice),
+        roughness: 2,
+        metalness: 0.2
+    });
+    const Sphere = new THREE.Mesh(SphereGeometry, SphereMaterial);
+    scene.add(Sphere);
+    Sphere.position.set(0, 0, 0);
+    Sphere.castShadow = true;
+    Sphere.name = "Sphere";
+    
+
     var BoxGeometry = new THREE.BoxGeometry(5, 5, 5);
     // const BoxMaterial = new THREE.MeshStandardMaterial({color: 0x00ff00});
     var BoxMaterial = new THREE.MeshBasicMaterial({
@@ -51,13 +78,14 @@ function init() {
     var Box = new THREE.Mesh(BoxGeometry, BoxMaterial);
     scene.add(Box);
     Box.castShadow = true;
+    Box.position.set(-20, 0, -20);
     //Plane
-    const PlaneGeometry = new THREE.PlaneGeometry(30, 30);
-    const PlaneMaterial = new THREE.MeshStandardMaterial({color: 0xFFFFFF, side: THREE.DoubleSide});
-    const Plane = new THREE.Mesh(PlaneGeometry, PlaneMaterial);
-    scene.add(Plane);
-    Plane.rotation.x = Math.PI / 2;
-    Plane.receiveShadow = true;
+    // const PlaneGeometry = new THREE.PlaneGeometry(30, 30);
+    // const PlaneMaterial = new THREE.MeshStandardMaterial({color: 0xFFFFFF});
+    // const Plane = new THREE.Mesh(PlaneGeometry, PlaneMaterial);
+    // scene.add(Plane);
+    // Plane.rotation.x = Math.PI / 2;
+    // Plane.receiveShadow = true;
 
     // Light
     const AmbientLight = new THREE.AmbientLight(0xffffff, 0.5);
@@ -76,11 +104,11 @@ function init() {
 
     const SpotLight = new THREE.SpotLight(0xFFFFFF);
     scene.add(SpotLight);
-    SpotLight.position.set(3, 4, -1);
+    SpotLight.position.set(3, 10, -1);
     SpotLight.castShadow = true;
     SpotLight.angle = Math.PI / 4;
     SpotLight.penumbra = 0.5;
-    SpotLight.intensity = 10;
+    SpotLight.intensity = 50;
 
     const spotLightHelper = new THREE.SpotLightHelper(SpotLight);
     scene.add(spotLightHelper);
@@ -92,15 +120,15 @@ function init() {
 
     //Texture
     const textureLoader = new THREE.TextureLoader();
-    // scene.background = textureLoader.load(Olivia);
+    // scene.background = textureLoader.load(ice);
     const cubeTextureLoader = new THREE.CubeTextureLoader();
     scene.background = cubeTextureLoader.load([
-        Olivia,
-        Olivia,
-        mentality,
-        mentality,
-        mentality,
-        mentality
+        stars,
+        stars, 
+        stars, 
+        stars, 
+        stars,
+        stars
     ]);
 
     
@@ -118,21 +146,27 @@ function init() {
     const params = {    
         material: 'Solid',
     };
+
     gui.add(params, 'material', ['Solid', 'Line', 'Point']).onChange(function(e){
         if (e === 'Solid') {
-            scene.remove(Box)
+            scene.remove(Box);
+
             BoxMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: false, 
                 transparent: true,
                 opacity: 0.2 });
             Box = new THREE.Mesh(BoxGeometry, BoxMaterial);
         } else if (e === 'Line') {
-            scene.remove(Box)
+            scene.remove(Box);
             BoxMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
             Box = new THREE.LineSegments(new THREE.EdgesGeometry(BoxGeometry), BoxMaterial);
+            var Sphere2 = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.SphereGeometry(sphereRadius, 32, 32)), BoxMaterial);
+            scene.add(Sphere2);
         } else if (e === 'Point') {
-            scene.remove(Box)
+            scene.remove(Box);
             BoxMaterial = new THREE.PointsMaterial({ color: 0x00f0f0, size: 0.1 });
             Box = new THREE.Points(BoxGeometry, BoxMaterial);
+            var Sphere2 = new THREE.Points(new THREE.SphereGeometry(sphereRadius, 32, 32), BoxMaterial);
+            scene.add(Sphere2);
         }
         scene.add(Box);
         });
@@ -146,10 +180,11 @@ function init() {
     gui.add(options, 'penumbra', 0, 1).onChange(function(e){
         SpotLight.penumbra = options.penumbra;
     });
-    gui.add(options, 'light_y', -10, 20).onChange(function(e){
+    gui.add(options, 'light_y', -10, 40).onChange(function(e){
         SpotLight.position.y = options.light_y;
     });
 
+    
 
     // LIGHT HDR
     // function rgbe_apply (texture, renderer, scene) {
@@ -177,12 +212,13 @@ function init() {
 
     // // // Loader model without HDR
     const gltfLoader = new GLTFLoader();
-    gltfLoader.load('./assets/scene.gltf', function(gltf){
+    gltfLoader.load('./assets/bmw_car/scene.gltf', function(gltf){
         const model = gltf.scene;
         scene.add(model);
         console.log(model);
         model.scale.set(1, 1, 1);
-        model.position.set(0, 0, 0);
+        const initialPosition = new THREE.Vector3(0, sphereRadius, 0);
+        model.position.copy(initialPosition);
         model.name = "car";
         gui.addColor(options, 'Body').onChange(function(e){
             model.getObjectByName("body_paint_0").material.color.setHex(e);
@@ -261,29 +297,25 @@ function update(renderer, scene, camera) {
             });
         }
     });
-    // moving
+    // moving tam thoi
     const model = scene.getObjectByName("car");
     window.addEventListener('keydown', function(e) {
-        if (e.key === 'w') {
-            model.position.z += 0.0001;
-        } else if (e.key === 's') {
-            model.position.z -= 0.0001;
+        if (e.key === 's') {
+            model.rotation.y += 0.01;
+        } else if (e.key === 'w') {
+            model.rotation.y -= 0.01;
         } else if (e.key === 'a') {
-            model.position.x -= 0.0001;
+            model.rotation.x -= 0.01;
         } else if (e.key === 'd') {
-            model.position.x += 0.0001;
+            model.rotation.x += 0.01;
         }
     });
-    
-    // const raycaster = new THREE.Raycaster();
-    // raycaster.setFromCamera(mousePosition, camera);
-    // const intersects = raycaster.intersectObjects(scene.children, true);
-    function animate() {
-        renderer.render(scene, camera);
-    }
-    
-    renderer.setAnimationLoop(animate);
-    
+
+    //Qua dia cau xoay
+    const sphere = scene.getObjectByName("Sphere");
+    sphere.rotation.x += 0.01;
+
+    renderer.render(scene, camera);    
     
     requestAnimationFrame(function() {
         update(renderer, scene, camera);
