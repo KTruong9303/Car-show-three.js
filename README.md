@@ -7,4 +7,4 @@ The final project of Computing Graphics Class
 3. install package
    `npm install`
 4. Run
-   `npm run dev`
+   `parcel ./src/index.html`
