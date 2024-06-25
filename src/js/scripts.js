@@ -3,7 +3,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import * as dat from 'dat.gui';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { FBXLoader } from 'three/examples/jsm/Addons.js';
-// import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import gsap from 'gsap';
 
 import moon from '../assets/textures/moon.jpg';
@@ -306,43 +306,45 @@ function init() {
         }
     });
 
-    // // LIGHT HDR, Chon anh bit map thuc hien texture mapping
-    // function rgbe_apply (renderer, scene, camera) {
-    //     const assetLoader = new GLTFLoader();
-    //     const rgbeLoader = new RGBELoader();
-    //     renderer.outputEncoding = THREE.LinearEncoding;
-    //     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    //     renderer.toneMappingExposure = 4;
-    //     rgbeLoader.load('./assets/bmw_hdr/MR_INT-001_NaturalStudio_NAD.hdr', function(texture){
-    //         texture.mapping = THREE.EquirectangularReflectionMapping;
-    //         scene.environment = texture;
-    //         // ********** Load model **********
-    //         assetLoader.load('./assets/bmw_hdr/scene.gltf', function(gltf){
-    //             const model = gltf.scene;
-    //             scene.add(model);
-    //             model.position.set(0, sphereRadius-0.2, 0);
-    //             model.scale.set(1.5, 1.5, 1.5);
-    //             console.log(model);
-    //             model.name = 'car_hdr';
-    //             const initialPosition = new THREE.Vector3(0, sphereRadius-0.2, 0);
-    //             model.position.copy(initialPosition);
-    //             // change direction of the model
+    // LIGHT HDR, Chon anh bit map thuc hien texture mapping
+    function rgbe_apply (renderer, scene, camera) {
+        const assetLoader = new GLTFLoader();
+        const rgbeLoader = new RGBELoader();
+        renderer.outputEncoding = THREE.LinearEncoding;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 4;
+        rgbeLoader.load('./assets/bmw_hdr/MR_INT-001_NaturalStudio_NAD.hdr', function(texture){
+            texture.mapping = THREE.EquirectangularReflectionMapping;
+            scene.environment = texture;
+            // ********** Load model **********
+            assetLoader.load('./assets/bmw_hdr/scene.gltf', function(gltf){
+                const model = gltf.scene;
+                scene.add(model);
+                model.position.set(0, sphereRadius-0.2, 0);
+                model.scale.set(1.5, 1.5, 1.5);
+                console.log(model);
+                model.name = 'car_hdr';
+                const initialPosition = new THREE.Vector3(0, sphereRadius-0.2, 0);
+                model.position.copy(initialPosition);
+                // change direction of the model from back to back
+                model.rotation.y = -Math.PI;
+        
 
-    //             model.traverse((child) => {
-    //                 if (child.isMesh) {
-    //                     child.castShadow = true;
-    //                     child.receiveShadow = true;
-    //                 }
-    //             });
+                model.traverse((child) => {
+                    if (child.isMesh) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                    }
+                });
 
 
-    //         }, function(xhr) {
-    //             console.log((xhr.loaded / xhr.total * 100) + '% loaded HDR');
-    //         }, function(error) {
-    //             console.error(error)
-    //         });
-    //     });    
-    // }
+            }, function(xhr) {
+                console.log((xhr.loaded / xhr.total * 100) + '% loaded HDR');
+            }, function(error) {
+                console.error(error)
+            });
+        });    
+    }
       
 
     // // // Loader model without HDR
