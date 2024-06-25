@@ -1,6 +1,6 @@
 # Car-show-three.js
 The final project of Computing Graphics Class  
--> [Try our demo](ktruong9303.github.io/miniworld)
+-> [Try our demo](https://ktruong9303.github.io/miniworld)
 
 ## How to run
 On the terminal
