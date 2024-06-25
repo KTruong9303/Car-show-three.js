@@ -5,7 +5,7 @@ The final project of Computing Graphics Class
 On the terminal
 1. install package
    `npm install`
-2. Run
+2. Try
    `parcel ./src/index.html` or `npm run build`
    
 *Require Node.js for npm command
