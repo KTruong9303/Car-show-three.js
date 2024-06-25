@@ -7,7 +7,9 @@ On the terminal
 1. install package
    `npm install`
 2. Try
-   `parcel ./src/index.html` or `npm run build`
+   `parcel ./src/index.html`
+3. Click the link showed in the terminal, normally is;
+   `localhost:1234`
    
 *Require Node.js for npm command
 ---
