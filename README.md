@@ -3,11 +3,11 @@ The final project of Computing Graphics Class
 -> [Try our demo](https://ktruong9303.github.io/miniworld)
 
 ## How to run
-On the terminal
+On the terminal, move to the project directory.
 1. install package
    `npm install`
 2. Try
-   `parcel ./src/index.html`
+   `parcel ./src/index.html` or `npx parcel ./src/index.html` (if you don't want to install parcel)
 3. Click the link showed in the terminal, normally is;
    `localhost:1234`
    
