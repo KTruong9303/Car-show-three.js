@@ -6,7 +6,7 @@ On the terminal
 1. install package
    `npm install`
 2. Run
-   `parcel ./src/index.html`
+   `parcel ./src/index.html` or `npm run build`
    
 *Require Node.js for npm command
 ---
